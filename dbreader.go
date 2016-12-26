@@ -20,13 +20,15 @@ type dbRawRow sql.RawBytes
 var rawRows [][]interface{}
 
 //数据库连接初始化
-func Init(user, password, host, port, charset string) *DBLayer {
+func Init(user, password, host, port, database, charset string) *DBLayer {
 	logFile, err := os.Create("db.log")
 	if err != nil {
 		panic(error(err))
 	}
 	logger := log.New(logFile, "[db]", log.LstdFlags|log.Llongfile)
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", user, password, host, port, charset))
+	dnsname := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", user, password, host, port, database, charset)
+	logger.Println(dnsname)
+	db, err := sql.Open("mysql", dnsname)
 	if err != nil {
 		logger.Fatal(err)
 		return nil
