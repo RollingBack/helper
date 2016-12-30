@@ -17,7 +17,7 @@ type DBLayer struct {
 type dbRawRow sql.RawBytes
 
 //结果集复制出来的大slice
-var rawRows [][]interface{}
+var rawRows [][]string
 
 //数据库连接初始化
 func Init(user, password, host, port, database, charset string) *DBLayer {
@@ -37,7 +37,7 @@ func Init(user, password, host, port, database, charset string) *DBLayer {
 }
 
 //从结果集中获取一行数据
-func (con *DBLayer) FetchOne(sql string) []interface{} {
+func (con *DBLayer) FetchOne(sql string) []string {
 	rows, err := con.db.Query(sql)
 	if err != nil {
 		con.logger.Fatal(err)
@@ -57,11 +57,19 @@ func (con *DBLayer) FetchOne(sql string) []interface{} {
 	if err != nil {
 		con.logger.Fatal(err)
 	}
-	return scanArgs
+	rowString := make([]string, len(columns))
+	for i, eachCol := range values {
+		if eachCol != nil {
+			rowString[i] = eachCol
+		}else{
+			rowString[i] = ""
+		}
+	}
+	return rowString
 }
 
 //从结果集中获取所有数据
-func (con *DBLayer) FetchAll(sql string) [][]interface{} {
+func (con *DBLayer) FetchAll(sql string) [][]string {
 	rows, err := con.db.Query(sql)
 	if err != nil {
 		con.logger.Fatal(err)
@@ -77,11 +85,19 @@ func (con *DBLayer) FetchAll(sql string) [][]interface{} {
 		scanArgs[i] = &values[i]
 	}
 	for rows.Next() {
+		rowString := make([]string, len(columns))
 		err = rows.Scan(scanArgs...)
 		if err != nil {
 			con.logger.Fatal(err)
 		}
-		rawRows = append(rawRows, scanArgs)
+		for i, eachCol := range values {
+			if eachCol != nil {
+				rowString[i] = string(eachCol)
+			}else{
+				rowString[i] = ""
+			}
+		}
+		rawRows = append(rawRows, rowString)
 	}
 	return rawRows
 }
