@@ -2,15 +2,15 @@ package helper
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
-	"fmt"
 )
 
 //数据库层结构，包含数据库连接和日志
 type DBLayer struct {
-	db *sql.DB
+	db     *sql.DB
 	logger *log.Logger
 }
 
@@ -59,9 +59,10 @@ func (con *DBLayer) FetchOne(sql string) []string {
 	}
 	rowString := make([]string, len(columns))
 	for i, eachCol := range values {
-		if eachCol != nil {
-			rowString[i] = eachCol
-		}else{
+		eachColString := string(eachCol)
+		if eachColString != "" {
+			rowString[i] = eachColString
+		} else {
 			rowString[i] = ""
 		}
 	}
@@ -93,7 +94,7 @@ func (con *DBLayer) FetchAll(sql string) [][]string {
 		for i, eachCol := range values {
 			if eachCol != nil {
 				rowString[i] = string(eachCol)
-			}else{
+			} else {
 				rowString[i] = ""
 			}
 		}
